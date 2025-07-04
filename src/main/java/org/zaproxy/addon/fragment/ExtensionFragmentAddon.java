@@ -9,34 +9,45 @@ import java.awt.event.ActionListener;
 
 public class ExtensionFragmentAddon extends ExtensionAdaptor {
 
+    private static final String NAME = "ExtensionFragmentAddon";
+
     public ExtensionFragmentAddon() {
-        super("ExtensionFragmentAddon");
+        super(NAME);
+        // 제거 또는 주석 처리
+        // this.setI18nPrefix("fragmentaddon");
     }
 
     @Override
     public void hook(ExtensionHook extensionHook) {
         super.hook(extensionHook);
 
+        // GUI 환경일 때 메뉴 추가
         if (getView() != null) {
             JMenu menu = new JMenu("Fragment Tools");
+
             JMenuItem runItem = new JMenuItem("Run Fragments");
             runItem.addActionListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
-                    runFragments();
+                    runFragmentScript();
                 }
             });
+
             menu.add(runItem);
-            extensionHook.getHookMenu().addToolsMenuItem(menu);
+            getView().getMainFrame().getMainMenuBar().getMenuTools().add(menu);
         }
     }
 
-    private void runFragments() {
+    private void runFragmentScript() {
         try {
-            // 외부 스크립트 실행 (예: Python fragment 트리거러)
-            Runtime.getRuntime().exec("python3 zap_fragment_runner.py");
+            ProcessBuilder pb = new ProcessBuilder("python3", "zap_fragment_runner.py");
+            pb.inheritIO(); // 콘솔 출력 연결
+            pb.start();
         } catch (Exception ex) {
             ex.printStackTrace();
+            JOptionPane.showMessageDialog(null,
+                    "Failed to execute fragment script.\n" + ex.getMessage(),
+                    "Fragment Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 }
